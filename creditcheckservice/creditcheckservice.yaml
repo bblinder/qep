@@ -27,6 +27,18 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.hostIP
+        - name: OTEL_SERVICE_NAME
+          value: "creditcheckservice"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "deployment.environment=qep,service.version=1.3"
+        - name: OTEL_PROPAGATORS
+          value: "tracecontext,baggage,b3multi"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://$(NODE_IP):4317"
+        - name: OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED
+          value: "true"
+        - name: PYTHONUNBUFFERED
+          value: "1"
         resources:
           requests:
             cpu: 110m

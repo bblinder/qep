@@ -1,3 +1,4 @@
+from opentelemetry import trace
 import requests
 from flask import Flask, request
 from waitress import serve
@@ -14,15 +15,21 @@ def test_it():
 
 @app.route('/check')
 def credit_check():
-    customerNum = request.args.get('customernum')
+    customernumber = request.args.get('customernum')
+
+    current_span = trace.get_current_span()
+    current_span.set_attribute("broker_id", customernumber)
     
     # Get Credit Score
     creditScoreReq = requests.get("http://creditprocessorservice:8899/getScore?customernum=" + customernumber)
     creditScore = int(creditScoreReq.text)
     creditScoreCategory = getCreditCategoryFromScore(creditScore)
 
+    current_span = trace.get_current_span()
+    current_span.set_attribute("score", creditScoreCategory)
+
     # Run Credit Check
-    creditCheckReq = requests.get("http://creditprocessorservice:8899/runCreditCheck?customernum=" + str(customerNum) + "&score=" + str(creditScore))
+    creditCheckReq = requests.get("http://creditprocessorservice:8899/runCreditCheck?customernum=" + str(customernumber) + "&score=" + str(creditScore))
     checkResult = str(creditCheckReq.text)
 
     return checkResult
